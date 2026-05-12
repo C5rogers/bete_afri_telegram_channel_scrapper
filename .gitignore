@@ -1,0 +1,5 @@
+.env
+telegram_scrapper_service.session
+telegram_exports/
+.venv/
+__pycache__/
