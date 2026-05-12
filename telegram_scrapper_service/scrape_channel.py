@@ -123,6 +123,11 @@ def parse_args() -> argparse.Namespace:
         help="Telethon session name to use.",
     )
     parser.add_argument(
+        "--source-handle",
+        default=get_env("TELEGRAM_SOURCE_HANDLE", None),
+        help="Handle shown in exported post templates, for example @YourChannel.",
+    )
+    parser.add_argument(
         "--no-download-images",
         action="store_true",
         help="Skip downloading Telegram media to local files.",
@@ -138,6 +143,7 @@ async def scrape_channel(
     output_json: Path,
     assets_dir: Path,
     session_name: str,
+    source_handle: str | None,
     download_images: bool,
 ) -> list[dict[str, Any]]:
     load_env_file()
@@ -150,7 +156,7 @@ async def scrape_channel(
     await client.start()
     try:
         channel = await client.get_entity(channel_ref)
-        source_handle = _build_source_handle(channel_ref, channel)
+        source_handle = source_handle or _build_source_handle(channel_ref, channel)
         assets_dir.mkdir(parents=True, exist_ok=True)
         records: list[dict[str, Any]] = []
         async for bundle in iter_rental_bundles(
@@ -804,6 +810,7 @@ def main() -> None:
             output_json=output_json,
             assets_dir=assets_dir,
             session_name=args.session_name,
+            source_handle=args.source_handle,
             download_images=not args.no_download_images and get_env_bool("DOWNLOAD_TELEGRAM_IMAGES", True),
         )
     )
