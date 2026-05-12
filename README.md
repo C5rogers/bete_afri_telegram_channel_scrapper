@@ -33,6 +33,7 @@ TELEGRAM_TARGET_CHANNEL=@your_destination_channel
 TELEGRAM_API_ID=123456
 TELEGRAM_API_HASH=your_api_hash
 TELEGRAM_BOT_TOKEN=your_bot_token
+TELEGRAM_SOURCE_HANDLE=@yenekiray_ethio
 ```
 
 Optional values:
@@ -42,6 +43,7 @@ Optional values:
 - `TELEGRAM_OUTPUT_DIR`
 - `TELEGRAM_POSTED_STATE_FILE`
 - `DOWNLOAD_TELEGRAM_IMAGES`
+- `TELEGRAM_SOURCE_HANDLE`
 
 ## Install
 
@@ -141,4 +143,3 @@ The exported records are stored under:
 - `--limit` is useful when testing a small portion of the channel history.
 - The Telegram bot must be an admin in the destination channel if you post with `--use-bot`.
 - The first run may create a Telethon session file for authentication.
-
