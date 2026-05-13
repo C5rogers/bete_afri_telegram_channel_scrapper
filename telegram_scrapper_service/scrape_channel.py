@@ -45,47 +45,6 @@ RENTAL_HINTS = (
     "ክፍል",
 )
 
-PROMO_HINTS = (
-    "follow for more",
-    "for more",
-    "more properties",
-    "join",
-    "subscribe",
-    "click",
-    "tap",
-    "channel",
-    "channels",
-    "group",
-    "telegram channel",
-    "hashtag",
-    "rent channel",
-    "join our",
-    "check our",
-    "visit",
-    "click here",
-    "ይጫኑ",
-    "ያዋሩን",
-    "follow",
-    "ፎሎው",
-    "ሊንኩን",
-    "ቻናል",
-    "ገቡ",
-    "ይቀላቀሉ",
-    "ለቢሮ እና ንግድ ሱቆች",
-)
-
-PROMO_LINK_HINTS = (
-    "bet_afri",
-    "betafrivip",
-    "bet_afri_business",
-    "betafri_contact",
-    "t.me/bet_afri",
-    "t.me/betafrivip",
-    "t.me/bet_afri_business",
-    "t.me/betafri_contact",
-)
-
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Scrape rental posts from a Telegram channel and export structured JSON."
@@ -363,15 +322,12 @@ def parse_rental_message(text: str) -> dict[str, Any]:
         category="rental",
         attributes=attributes,
     )
-    promotional = is_promotional_post(text, title=title, price_info=price_info, location_text=location_text)
 
     property_type = title or family["listing_type_label"]
     city, district = split_location(location_text)
 
     return {
-        "is_rental": not promotional
-        and (any(keyword in text.lower() for keyword in RENTAL_HINTS) or family["listing_family"] != "unknown"),
-        "is_promotional": promotional,
+        "is_rental": any(keyword in text.lower() for keyword in RENTAL_HINTS) or family["listing_family"] != "unknown",
         "title": title,
         "listing_family": family["listing_family"],
         "listing_type": family["listing_type"],
@@ -409,7 +365,7 @@ def extract_title(lines: list[str], fallback_text: str) -> str:
             continue
         if len(cleaned) <= 4:
             continue
-        if looks_like_label_line(cleaned) or is_promo_or_contact_line(cleaned):
+        if looks_like_label_line(cleaned):
             continue
         return cleaned
     return strip_markers(first_line(fallback_text) or "Rental listing")
@@ -461,49 +417,6 @@ def extract_price(text: str) -> dict[str, Any]:
         "price_period": price_period,
         "price_type": price_type,
     }
-
-
-def is_promotional_post(
-    text: str,
-    *,
-    title: str | None,
-    price_info: dict[str, Any],
-    location_text: str | None,
-) -> bool:
-    lowered = text.lower()
-    title_lower = (title or "").lower()
-    promo_hits = sum(1 for hint in PROMO_HINTS if hint in lowered or hint in title_lower)
-    promo_link_hits = sum(1 for hint in PROMO_LINK_HINTS if hint in lowered)
-
-    if promo_link_hits >= 1 and promo_hits >= 1:
-        return True
-
-    if promo_hits >= 3 and not price_info.get("price_text") and not location_text:
-        return True
-
-    if promo_hits >= 4:
-        return True
-
-    if any(
-        phrase in lowered
-        for phrase in (
-            "follow for more",
-            "for more properties",
-            "hashtag",
-            "click the link",
-            "join the channel",
-            "join our channel",
-            "our channel",
-            "more rental listings",
-            "subscribe for more",
-        )
-    ):
-        return True
-
-    if lowered.count("http://") + lowered.count("https://") >= 2 and not price_info.get("price_text"):
-        return True
-
-    return False
 
 
 def extract_listing_code(text: str, attributes: dict[str, str]) -> str | None:
@@ -776,26 +689,6 @@ def strip_markers(value: str) -> str:
     cleaned = re.sub(r"^[^\w\u1200-\u137f]+", "", cleaned)
     cleaned = re.sub(r"[^\w\u1200-\u137f]+$", "", cleaned)
     return normalize_line(cleaned)
-
-
-def is_promo_or_contact_line(value: str) -> bool:
-    lowered = value.lower()
-    return any(
-        marker in lowered
-        for marker in (
-            "follow for more",
-            "hashtag",
-            "contact",
-            "join",
-            "click",
-            "t.me/",
-            "ያዋሩን",
-            "ይጫኑ",
-            "ይሄንን",
-            "ይሄን",
-            "more",
-        )
-    )
 
 
 def main() -> None:
