@@ -50,7 +50,7 @@ Optional values:
 Activate your virtual environment, then install dependencies:
 
 ```bash
-pip install telethon
+pip install -r requirements.txt
 ```
 
 If you already have a project environment, use the one you normally run this repo with.
